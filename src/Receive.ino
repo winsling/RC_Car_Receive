@@ -3,6 +3,7 @@
 // felix@lowpowerlab.com
 
 #include <RFM12B.h>
+#include <Servo.h>
 
 // You will need to initialize the radio by telling it what ID it has and what network it's on
 // The NodeID takes values from 1-127, 0 is reserved for sending broadcast messages (send to all nodes)
@@ -29,7 +30,7 @@ union SerializedData_type {
   char command_serial[14];
 } SerializedData;
 
-
+Servo ESC1;
 // Need an instance of the Radio Module
 RFM12B radio;
 void setup()
@@ -38,6 +39,7 @@ void setup()
   radio.Encrypt(KEY);      //comment this out to disable encryption
   Serial.begin(SERIAL_BAUD);
   Serial.println("Listening...");
+  ESC1.attach(9);
 }
 
 void loop()
@@ -53,6 +55,8 @@ void loop()
       Serial.print(SerializedData.command.Speed);
       Serial.print("Steering Angle: ");
       Serial.println(SerializedData.command.SteeringAngle);
+      ESC1.write(SerializedData.command.Speed);
+
 
       if (radio.ACKRequested())
       {
