@@ -4,6 +4,8 @@
 
 #include <RFM12B.h>
 #include <Servo.h>
+#include <Wire.h>
+
 
 // You will need to initialize the radio by telling it what ID it has and what network it's on
 // The NodeID takes values from 1-127, 0 is reserved for sending broadcast messages (send to all nodes)
@@ -42,6 +44,7 @@ void setup()
   Serial.println("Listening...");
   ESC1.attach(9);
   Steering.attach(8);
+  Wire.begin();
 }
 
 void loop()
@@ -50,26 +53,20 @@ void loop()
   {
     if (radio.CRCPass())
     {
-      Serial.print('[');Serial.print(radio.GetSender());Serial.print("] ");
       for (byte i = 0; i < *radio.DataLen; i++) //can also use radio.GetDataLen() if you don't like pointers
         SerializedData.command_serial[i]= radio.Data[i];
-      Serial.print("Speed: ");
-      Serial.print(SerializedData.command.Speed);
-      Serial.print("Steering Angle: ");
-      Serial.println(SerializedData.command.SteeringAngle);
+
       ESC1.write(SerializedData.command.Speed);
       Steering.write(SerializedData.command.SteeringAngle);
-
 
       if (radio.ACKRequested())
       {
         radio.SendACK();
-        Serial.print(" - ACK sent");
       }
     }
-    else
-      Serial.print("BAD-CRC");
-    
-    Serial.println();
   }
+
+  Wire.beginTransmission(42);
+  Wire.write(0);
+  boolean WireResult = Wire.endTransmission();
 }
