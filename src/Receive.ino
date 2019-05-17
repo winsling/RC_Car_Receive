@@ -25,7 +25,7 @@ uint8_t KEY[] = "ABCDABCDABCDABCD";
 struct command_type {
   int Speed;
   int SteeringAngle;
-  bool FrontLight;
+  int FrontLight;
 };
 
 union SerializedData_type {
@@ -68,6 +68,6 @@ void loop()
   }
 
   Wire.beginTransmission(42);
-  Wire.write(0);
+  Wire.write(SerializedData.command.FrontLight);
   boolean WireResult = Wire.endTransmission();
 }
