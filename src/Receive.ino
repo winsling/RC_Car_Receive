@@ -25,6 +25,7 @@ uint8_t KEY[] = "ABCDABCDABCDABCD";
 struct command_type {
   int Speed;
   int SteeringAngle;
+  bool FrontLight;
 };
 
 union SerializedData_type {
