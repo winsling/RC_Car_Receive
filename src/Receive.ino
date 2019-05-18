@@ -25,6 +25,7 @@ uint8_t KEY[] = "ABCDABCDABCDABCD";
 struct command_type {
   int Speed;
   int SteeringAngle;
+  int FrontLight;
 };
 
 union SerializedData_type {
@@ -58,6 +59,10 @@ void loop()
 
       ESC1.write(SerializedData.command.Speed);
       Steering.write(SerializedData.command.SteeringAngle);
+      
+      Wire.beginTransmission(8);
+      Wire.write(SerializedData.command.FrontLight);
+      boolean WireResult = Wire.endTransmission();
 
       if (radio.ACKRequested())
       {
@@ -66,7 +71,5 @@ void loop()
     }
   }
 
-  Wire.beginTransmission(42);
-  Wire.write(0);
-  boolean WireResult = Wire.endTransmission();
+
 }
