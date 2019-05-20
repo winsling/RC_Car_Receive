@@ -64,6 +64,10 @@ void loop()
       Wire.write(SerializedData.command.FrontLight);
       boolean WireResult = Wire.endTransmission();
 
+      Wire.beginTransmission(9);
+      Wire.write(1);
+      boolean WireResult = Wire.endTransmission();
+
       if (radio.ACKRequested())
       {
         radio.SendACK();
