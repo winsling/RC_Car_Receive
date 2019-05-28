@@ -50,6 +50,7 @@ void setup()
 
 void loop()
 {
+  boolean WireResult = 0;
   if (radio.ReceiveComplete())
   {
     if (radio.CRCPass())
@@ -62,11 +63,11 @@ void loop()
       
       Wire.beginTransmission(8);
       Wire.write(SerializedData.command.FrontLight);
-      boolean WireResult = Wire.endTransmission();
+      WireResult = Wire.endTransmission();
 
       Wire.beginTransmission(9);
       Wire.write(1);
-      boolean WireResult = Wire.endTransmission();
+      WireResult = Wire.endTransmission();
 
       if (radio.ACKRequested())
       {
