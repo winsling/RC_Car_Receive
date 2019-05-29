@@ -66,7 +66,7 @@ void loop()
       WireResult = Wire.endTransmission();
 
       Wire.beginTransmission(9);
-      Wire.write(1);
+      Wire.write(SerializedData.command.FrontLight);
       WireResult = Wire.endTransmission();
 
       if (radio.ACKRequested())
