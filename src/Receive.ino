@@ -25,24 +25,29 @@ uint8_t KEY[] = "ABCDABCDABCDABCD";
 struct command_type {
   int Speed;
   int SteeringAngle;
-  int FrontLight;
+  bool FrontLight;
+  bool ENPO;
 };
 
 union SerializedData_type {
   command_type command;
-  char command_serial[14];
+  char command_serial[8];
 } SerializedData;
 
 Servo ESC1;
 Servo Steering;
 // Need an instance of the Radio Module
 RFM12B radio;
+
+int ENPOPin = 5;
+
 void setup()
 {
   radio.Initialize(NODEID, RF12_868MHZ, NETWORKID);
   radio.Encrypt(KEY);      //comment this out to disable encryption
   Serial.begin(SERIAL_BAUD);
   Serial.println("Listening...");
+  pinMode(ENPOPin,OUTPUT);
   ESC1.attach(9);
   Steering.attach(8);
   Wire.begin();
@@ -68,6 +73,9 @@ void loop()
       Wire.beginTransmission(9);
       Wire.write(SerializedData.command.FrontLight);
       WireResult = Wire.endTransmission();
+
+      if (SerializedData.command.ENPO) digitalWrite(ENPOPin,HIGH);
+      else  digitalWrite(ENPOPin,LOW);
 
       if (radio.ACKRequested())
       {
