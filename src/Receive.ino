@@ -39,7 +39,7 @@ Servo Steering;
 // Need an instance of the Radio Module
 RFM12B radio;
 
-int ENPOPin = 5;
+int ENPOPin = 3;
 
 void setup()
 {
@@ -62,6 +62,8 @@ void loop()
     {
       for (byte i = 0; i < *radio.DataLen; i++) //can also use radio.GetDataLen() if you don't like pointers
         SerializedData.command_serial[i]= radio.Data[i];
+
+      Serial.println(SerializedData.command.ENPO);
 
       ESC1.write(SerializedData.command.Speed);
       Steering.write(SerializedData.command.SteeringAngle);
