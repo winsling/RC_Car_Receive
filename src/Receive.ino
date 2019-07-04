@@ -27,11 +27,19 @@ struct command_type {
   int SteeringAngle;
   bool FrontLight;
   bool ENPO;
+  bool MultiBlueBtn;
+  bool MultiWhiteBtn;
+  bool MultiYellowBtn;
+  bool MultiRedBtn;
+  bool MultiOrangeBtn;
+  bool MultiGreenBtn;
+  bool MultiGrayBtn;
+  bool MultiBlackBtn;
 };
 
 union SerializedData_type {
   command_type command;
-  char command_serial[8];
+  char command_serial[10];
 } SerializedData;
 
 Servo ESC1;
@@ -70,10 +78,11 @@ void loop()
       
       Wire.beginTransmission(8);
       Wire.write(SerializedData.command.FrontLight);
+      Wire.write(SerializedData.command.MultiBlueBtn);
       WireResult = Wire.endTransmission();
 
       Wire.beginTransmission(9);
-      Wire.write(SerializedData.command.FrontLight);
+      Wire.write(SerializedData.command.MultiOrangeBtn);
       WireResult = Wire.endTransmission();
 
       if (SerializedData.command.ENPO) digitalWrite(ENPOPin,HIGH);
