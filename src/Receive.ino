@@ -33,14 +33,14 @@ union MultiBtnCharType {
 
   MultiBtnBitFieldType MultiBtnBitField;
   char MultiBtnByte;
-};
+} MultiBtnRcvCharType;
 
 struct command_type {
   int Speed;
   int SteeringAngle;
   bool FrontLight;
   bool ENPO;
-  MultiBtnCharType MultiBtnChar;
+  char MultiBtnChar;
 };
 
 union SerializedData_type {
@@ -91,7 +91,7 @@ void loop()
       WireResult = Wire.endTransmission();
 
       Wire.beginTransmission(9);
-      Wire.write(SerializedData.command.MultiOrangeBtn);
+      Wire.write(SerializedData.command.MultiBtnChar);
       WireResult = Wire.endTransmission();
 
       if (SerializedData.command.ENPO) digitalWrite(ENPOPin,HIGH);
