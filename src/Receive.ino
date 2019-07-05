@@ -1,7 +1,3 @@
-// Simple serial pass through program
-// It initializes the RFM12B radio with optional encryption and passes through any valid messages to the serial port
-// felix@lowpowerlab.com
-
 #include <RFM12B.h>
 #include <Servo.h>
 #include <Wire.h>
@@ -22,19 +18,29 @@
 // - to stop encrypting call .Encrypt(NULL)
 uint8_t KEY[] = "ABCDABCDABCDABCD";
 
+struct MultiBtnBitFieldType {
+  bool MultiBlueBtn:1;
+  bool MultiWhiteBtn:1;
+  bool MultiYellowBtn:1;
+  bool MultiRedBtn:1;
+  bool MultiOrangeBtn:1;
+  bool MultiGreenBtn:1;
+  bool MultiGrayBtn:1;
+  bool MultiBlackBtn:1;
+};
+
+union MultiBtnCharType {
+
+  MultiBtnBitFieldType MultiBtnBitField;
+  char MultiBtnByte;
+};
+
 struct command_type {
   int Speed;
   int SteeringAngle;
   bool FrontLight;
   bool ENPO;
-  bool MultiBlueBtn;
-  bool MultiWhiteBtn;
-  bool MultiYellowBtn;
-  bool MultiRedBtn;
-  bool MultiOrangeBtn;
-  bool MultiGreenBtn;
-  bool MultiGrayBtn;
-  bool MultiBlackBtn;
+  MultiBtnCharType MultiBtnChar;
 };
 
 union SerializedData_type {
@@ -48,6 +54,9 @@ Servo Steering;
 RFM12B radio;
 
 int ENPOPin = 3;
+
+
+
 
 void setup()
 {
@@ -77,8 +86,8 @@ void loop()
       Steering.write(SerializedData.command.SteeringAngle);
       
       Wire.beginTransmission(8);
-      Wire.write(SerializedData.command.FrontLight);
-      Wire.write(SerializedData.command.MultiBlueBtn);
+      Wire.write(SerializedData.command.FrontLight); // sending front light switch state to light controller
+      Wire.write(SerializedData.command.SteeringAngle & 0xff);  // sending steering angle to light controller for turn indicator
       WireResult = Wire.endTransmission();
 
       Wire.beginTransmission(9);
