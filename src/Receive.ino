@@ -54,8 +54,17 @@ Servo Steering;
 RFM12B radio;
 
 int ENPOPin = 3;
+int IR_LPin = 4;
+int IR_FLPin = 5;
+int IR_RPin = 6;
+int IR_FRPin = 7;
 
+bool IR_L=0;
+bool IR_FL=0;
+bool IR_R=0;
+bool IR_FR=0;
 
+const int MaxSpeed = 85;
 
 
 void setup()
@@ -65,6 +74,10 @@ void setup()
   Serial.begin(SERIAL_BAUD);
   Serial.println("Listening...");
   pinMode(ENPOPin,OUTPUT);
+  pinMode(IR_LPin,INPUT);
+  pinMode(IR_FLPin,INPUT);
+  pinMode(IR_RPin,INPUT);
+  pinMode(IR_FRPin,INPUT);
   ESC1.attach(9);
   Steering.attach(8);
   Wire.begin();
@@ -73,6 +86,14 @@ void setup()
 void loop()
 {
   boolean WireResult = 0;
+
+  IR_L = digitalRead(IR_LPin) > 0;
+  IR_FL = digitalRead(IR_FLPin) > 0;
+  IR_R = digitalRead(IR_RPin) > 0;
+  IR_FR = digitalRead(IR_FRPin) > 0; 
+
+  bool ObstDetect = IR_L | IR_FL | IR_R | IR_FR;
+
   if (radio.ReceiveComplete())
   {
     if (radio.CRCPass())
@@ -81,6 +102,11 @@ void loop()
         SerializedData.command_serial[i]= radio.Data[i];
 
       Serial.println(SerializedData.command.ENPO);
+
+      if ((ObstDetect) && (SerializedData.command.Speed > MaxSpeed)) {
+
+        SerializedData.command.Speed = MaxSpeed;
+      }
 
       ESC1.write(SerializedData.command.Speed);
       Steering.write(SerializedData.command.SteeringAngle);
