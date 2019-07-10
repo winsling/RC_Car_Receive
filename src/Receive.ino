@@ -119,6 +119,7 @@ void loop()
 
       Wire.beginTransmission(9); // I2C to Audio Controller
       Wire.write(SerializedData.command.MultiBtnChar);
+      Wire.write(SerializedData.command.SteeringAngle & 0xff);  // sending steering angle to light controller for turn indicator
       Wire.write(SerializedData.command.Speed);
       WireResult = Wire.endTransmission();
 
