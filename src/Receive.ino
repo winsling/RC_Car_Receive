@@ -64,7 +64,7 @@ bool IR_FL=0;
 bool IR_R=0;
 bool IR_FR=0;
 
-const int MaxSpeed = 85;
+const int MaxObstacleSpeed = 85;
 
 
 void setup()
@@ -103,9 +103,9 @@ void loop()
 
       Serial.println(SerializedData.command.ENPO);
 
-      if ((ObstDetect) && (SerializedData.command.Speed > MaxSpeed)) {
+      if ((ObstDetect) && (SerializedData.command.Speed > MaxObstacleSpeed)) {
 
-        SerializedData.command.Speed = MaxSpeed;
+        SerializedData.command.Speed = MaxObstacleSpeed;
       }
 
       ESC1.write(SerializedData.command.Speed);
