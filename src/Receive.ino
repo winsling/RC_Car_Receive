@@ -54,46 +54,54 @@ Servo Steering;
 RFM12B radio;
 
 int ENPOPin = 3;
-int IR_LPin = 4;
-int IR_FLPin = 5;
-int IR_RPin = 6;
-int IR_FRPin = 7;
+#define TRIGGER_PIN 5 // Arduino Pin an HC-SR04 Trig
+#define ECHO_PIN 4    // Arduino Pin an HC-SR04 Echo
 
-bool IR_L=0;
-bool IR_FL=0;
-bool IR_R=0;
-bool IR_FR=0;
-
-const int MaxObstacleSpeed = 85;
+#define MaxObstacleSpeed 85
 
 
 void setup()
 {
   radio.Initialize(NODEID, RF12_868MHZ, NETWORKID);
-  radio.Encrypt(KEY);      //comment this out to disable encryption
+//  radio.Encrypt(KEY);      //comment this out to disable encryption
   Serial.begin(SERIAL_BAUD);
   Serial.println("Listening...");
   pinMode(ENPOPin,OUTPUT);
-  pinMode(IR_LPin,INPUT);
-  pinMode(IR_FLPin,INPUT);
-  pinMode(IR_RPin,INPUT);
-  pinMode(IR_FRPin,INPUT);
+  pinMode(TRIGGER_PIN,OUTPUT);
+  pinMode(ECHO_PIN,INPUT);
   ESC1.attach(9);
   Steering.attach(8);
   Wire.begin();
+  digitalWrite(TRIGGER_PIN,HIGH);
 }
+
+int getDist()
+{
+  long dist=0;
+  long time_echo=0;
+
+  digitalWrite(TRIGGER_PIN, LOW);
+  delayMicroseconds(3);
+  noInterrupts();
+  digitalWrite(TRIGGER_PIN, HIGH); //Trigger Impuls 10 us
+  delayMicroseconds(10);
+  digitalWrite(TRIGGER_PIN, LOW);
+  time_echo = pulseIn(ECHO_PIN, HIGH); // Echo-Zeit messen
+  interrupts();
+  time_echo = (time_echo/2); // Zeit halbieren
+  dist = time_echo / 29.1; // Zeit in Zentimeter umrechnen
+  //Serial.println(dist);
+  return(dist);
+}
+
 
 void loop()
 {
   boolean WireResult = 0;
 
-  IR_L = digitalRead(IR_LPin) > 0;
-  IR_FL = digitalRead(IR_FLPin) > 0;
-  IR_R = digitalRead(IR_RPin) > 0;
-  IR_FR = digitalRead(IR_FRPin) > 0; 
-
-  bool ObstDetect = IR_L | IR_FL | IR_R | IR_FR;
-
+  long act_dist = 0;
+  
+  
   if (radio.ReceiveComplete())
   {
     if (radio.CRCPass())
@@ -101,11 +109,12 @@ void loop()
       for (byte i = 0; i < *radio.DataLen; i++) //can also use radio.GetDataLen() if you don't like pointers
         SerializedData.command_serial[i]= radio.Data[i];
 
-      Serial.println(SerializedData.command.ENPO);
+      act_dist = getDist();
 
-      if ((ObstDetect) && (SerializedData.command.Speed > MaxObstacleSpeed)) {
-
-        SerializedData.command.Speed = MaxObstacleSpeed;
+      if ((act_dist<90) && (SerializedData.command.Speed > MaxObstacleSpeed) && (act_dist>0)) {
+        SerializedData.command.FrontLight = true;
+        ESC1.write(80);
+        return;
       }
 
       ESC1.write(SerializedData.command.Speed);
