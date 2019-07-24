@@ -1,5 +1,4 @@
 #include <RFM12B.h>
-//#include <Servo.h>
 #include <Wire.h>
 
 
