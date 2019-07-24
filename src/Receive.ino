@@ -1,5 +1,5 @@
 #include <RFM12B.h>
-#include <Servo.h>
+//#include <Servo.h>
 #include <Wire.h>
 
 
@@ -48,8 +48,8 @@ union SerializedData_type {
   char command_serial[10];
 } SerializedData;
 
-Servo ESC1;
-Servo Steering;
+//Servo ESC1;
+//Servo Steering;
 // Need an instance of the Radio Module
 RFM12B radio;
 
@@ -57,7 +57,7 @@ int ENPOPin = 3;
 #define TRIGGER_PIN 5 // Arduino Pin an HC-SR04 Trig
 #define ECHO_PIN 4    // Arduino Pin an HC-SR04 Echo
 
-#define MaxObstacleSpeed 85
+#define MaxObstacleSpeed 90
 
 
 void setup()
@@ -69,8 +69,8 @@ void setup()
   pinMode(ENPOPin,OUTPUT);
   pinMode(TRIGGER_PIN,OUTPUT);
   pinMode(ECHO_PIN,INPUT);
-  ESC1.attach(9);
-  Steering.attach(8);
+  //ESC1.attach(9);
+  //Steering.attach(8);
   Wire.begin();
   digitalWrite(TRIGGER_PIN,HIGH);
 }
@@ -113,13 +113,25 @@ void loop()
 
       if ((act_dist<90) && (SerializedData.command.Speed > MaxObstacleSpeed) && (act_dist>0)) {
         SerializedData.command.FrontLight = true;
-        ESC1.write(80);
-        return;
+        SerializedData.command.Speed = MaxObstacleSpeed;
       }
 
-      ESC1.write(SerializedData.command.Speed);
-      Steering.write(SerializedData.command.SteeringAngle);
+      if (SerializedData.command.Speed >86 && (act_dist<70)) {
+        SerializedData.command.Speed = 86;
+      }
+
+      if (SerializedData.command.Speed >85 && (act_dist<20)) {
+        SerializedData.command.Speed = 80;
+      }
+
+      //ESC1.write(SerializedData.command.Speed);
+      //Steering.write(SerializedData.command.SteeringAngle);
       
+      Wire.beginTransmission(7); // I2C to Servo Controller
+      Wire.write(SerializedData.command.SteeringAngle & 0xff);  // sending steering angle to light controller for turn indicator
+      Wire.write(SerializedData.command.Speed);
+      WireResult = Wire.endTransmission();
+
       Wire.beginTransmission(8); // I2C to Light Controller
       Wire.write(SerializedData.command.FrontLight); // sending front light switch state to light controller
       Wire.write(SerializedData.command.SteeringAngle & 0xff);  // sending steering angle to light controller for turn indicator
