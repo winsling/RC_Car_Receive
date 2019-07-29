@@ -47,8 +47,6 @@ union SerializedData_type {
   char command_serial[10];
 } SerializedData;
 
-//Servo ESC1;
-//Servo Steering;
 // Need an instance of the Radio Module
 RFM12B radio;
 
@@ -57,6 +55,8 @@ int ENPOPin = 3;
 #define ECHO_PIN 4    // Arduino Pin an HC-SR04 Echo
 
 #define MaxObstacleSpeed 90
+
+bool Obst_Detect = 0;
 
 
 void setup()
@@ -108,23 +108,24 @@ void loop()
       for (byte i = 0; i < *radio.DataLen; i++) //can also use radio.GetDataLen() if you don't like pointers
         SerializedData.command_serial[i]= radio.Data[i];
 
+      Obst_Detect = false;
+      
       act_dist = getDist();
 
       if ((act_dist<90) && (SerializedData.command.Speed > MaxObstacleSpeed) && (act_dist>0)) {
-        SerializedData.command.FrontLight = true;
+        Obst_Detect = true;
         SerializedData.command.Speed = MaxObstacleSpeed;
       }
 
-      if (SerializedData.command.Speed >86 && (act_dist<70)) {
-        SerializedData.command.Speed = 86;
+      if (SerializedData.command.Speed >88 && (act_dist<40)) {
+        SerializedData.command.Speed = 88;
+        Obst_Detect = true;
       }
 
-      if (SerializedData.command.Speed >85 && (act_dist<20)) {
-        SerializedData.command.Speed = 80;
-      }
+//      if (SerializedData.command.Speed >85 && (act_dist<20)) {
+//        SerializedData.command.Speed = 85;
+//      }
 
-      //ESC1.write(SerializedData.command.Speed);
-      //Steering.write(SerializedData.command.SteeringAngle);
       
       Wire.beginTransmission(7); // I2C to Servo Controller
       Wire.write(SerializedData.command.SteeringAngle & 0xff);  // sending steering angle to light controller for turn indicator
@@ -134,6 +135,7 @@ void loop()
       Wire.beginTransmission(8); // I2C to Light Controller
       Wire.write(SerializedData.command.FrontLight); // sending front light switch state to light controller
       Wire.write(SerializedData.command.SteeringAngle & 0xff);  // sending steering angle to light controller for turn indicator
+      Wire.write(Obst_Detect);
       Wire.write(SerializedData.command.Speed);
       WireResult = Wire.endTransmission();
 
