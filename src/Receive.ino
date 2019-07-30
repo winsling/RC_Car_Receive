@@ -50,7 +50,7 @@ union SerializedData_type {
 // Need an instance of the Radio Module
 RFM12B radio;
 
-int ENPOPin = 3;
+#define ENPOPin 3
 #define TRIGGER_PIN 5 // Arduino Pin an HC-SR04 Trig
 #define ECHO_PIN 4    // Arduino Pin an HC-SR04 Echo
 
