@@ -117,7 +117,7 @@ void loop()
         SerializedData.command.Speed = MaxObstacleSpeed;
       }
 
-      if (SerializedData.command.Speed >88 && (act_dist<40)) {
+      if (SerializedData.command.Speed >88 && (act_dist<50)) {
         SerializedData.command.Speed = 88;
         Obst_Detect = true;
       }
