@@ -98,7 +98,9 @@ void loop()
 {
   boolean WireResult = 0;
 
-  long act_dist = 0;
+  static long act_dist = 0;
+  long old_dist = 0;
+  static unsigned long t1,t2;
   
   
   if (radio.ReceiveComplete())
@@ -109,8 +111,13 @@ void loop()
         SerializedData.command_serial[i]= radio.Data[i];
 
       Obst_Detect = false;
-      
+      old_dist = act_dist;
       act_dist = getDist();
+      t2 = t1;
+      t1=millis();
+      Serial.print(old_dist-act_dist);
+      Serial.print(" ");
+      Serial.println(t1-t2);
 
       if ((act_dist<90) && (SerializedData.command.Speed > MaxObstacleSpeed) && (act_dist>0)) {
         Obst_Detect = true;
