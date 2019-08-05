@@ -74,10 +74,10 @@ void setup()
   digitalWrite(TRIGGER_PIN,HIGH);
 }
 
-int getDist()
+float getDist()
 {
-  long dist=0;
-  long time_echo=0;
+  float dist=0;
+  float time_echo=0;
 
   digitalWrite(TRIGGER_PIN, LOW);
   delayMicroseconds(3);
@@ -98,11 +98,15 @@ void loop()
 {
   boolean WireResult = 0;
 
-  static long act_dist = 0;
-  long old_dist = 0;
+  static float act_dist = 0;
+  float old_dist = 0;
   static unsigned long t1,t2;
+  float speed = 0;
   
-  
+
+
+
+
   if (radio.ReceiveComplete())
   {
     if (radio.CRCPass())
@@ -110,24 +114,61 @@ void loop()
       for (byte i = 0; i < *radio.DataLen; i++) //can also use radio.GetDataLen() if you don't like pointers
         SerializedData.command_serial[i]= radio.Data[i];
 
-      Obst_Detect = false;
-      old_dist = act_dist;
-      act_dist = getDist();
-      t2 = t1;
-      t1=millis();
-      Serial.print(old_dist-act_dist);
-      Serial.print(" ");
-      Serial.println(t1-t2);
+        old_dist = act_dist;
+        act_dist = getDist();
+        t2 = t1;
+        t1=millis();
 
-      if ((act_dist<90) && (SerializedData.command.Speed > MaxObstacleSpeed) && (act_dist>0)) {
-        Obst_Detect = true;
-        SerializedData.command.Speed = MaxObstacleSpeed;
-      }
+  
+        if ((act_dist>0) && (act_dist<120)){
+            
+            speed = (old_dist-act_dist)/(t1-t2);
 
-      if (SerializedData.command.Speed >88 && (act_dist<50)) {
-        SerializedData.command.Speed = 88;
-        Obst_Detect = true;
-      }
+
+
+
+            Serial.print(t1-t2);
+            Serial.print(" ");
+//            Serial.print(t1);
+//            Serial.print(" ");
+//            Serial.print(t2);
+//            Serial.print(" ");
+            Serial.print(old_dist);
+            Serial.print(" ");
+            Serial.print(act_dist);
+            Serial.print(" ");
+            Serial.println(speed);
+
+
+            if (speed > 0.1){
+               Obst_Detect = false;
+
+        
+        //if ((act_dist<90) && (speed>0.5)) Obst_Detect = true; else Obst_Detect = false;  
+//        if (speed>0.05) {
+//          Obst_Detect = true;
+//          Serial.println(speed);
+//        } else Obst_Detect = false;
+        
+        
+        
+            }
+        }
+//      Serial.print(old_dist-act_dist);
+//      Serial.print(" ");
+//      Serial.println(t1-t2);
+
+    
+
+//      if ((act_dist<90) && (SerializedData.command.Speed > MaxObstacleSpeed) && (act_dist>0)) {
+//        Obst_Detect = true;
+//        SerializedData.command.Speed = MaxObstacleSpeed;
+//      }
+
+//      if (SerializedData.command.Speed >88 && (act_dist<50)) {
+//        SerializedData.command.Speed = 88;
+//        Obst_Detect = true;
+//      }
 
 //      if (SerializedData.command.Speed >85 && (act_dist<20)) {
 //        SerializedData.command.Speed = 85;
