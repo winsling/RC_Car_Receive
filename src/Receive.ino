@@ -113,62 +113,59 @@ void loop()
       for (byte i = 0; i < *radio.DataLen; i++) //can also use radio.GetDataLen() if you don't like pointers
         SerializedData.command_serial[i] = radio.Data[i];
 
-      old_dist = act_dist;
-      act_dist = getDist();
-      t2 = t1;
-      t1 = millis();
-
-      if ((old_dist < 121) && (act_dist > 0) && (act_dist < 120) && (act_dist < old_dist) && (!Break_flag))
+      if (!Break_flag)
       {
+        old_dist = act_dist;
+        act_dist = getDist();
+        t2 = t1;
+        t1 = millis();
 
-        speed = (old_dist - act_dist) / (t1 - t2);
-        if ((speed > 0.3) && (act_dist > 100))
+        if (SerializedData.command.Speed > 81)
         {
-          threshold += 1;
-          Obst_t0 = millis();
-        }
-        if ((speed > 0.25) && (act_dist < 100) && (act_dist > 80))
-        {
-          threshold += 1;
-          Obst_t0 = millis();
-        }
-        if ((speed > 0.2) && (act_dist < 80) && (act_dist > 60))
-        {
-          threshold += 1;
-          Obst_t0 = millis();
-        }
-        if ((speed > 0.15) && (act_dist < 60) && (act_dist > 40))
-        {
-          threshold += 1;
-          Obst_t0 = millis();
-        }
-        if ((speed > 0.1) && (act_dist < 40))
-        {
-          threshold += 1;
-          Obst_t0 = millis();
-        }
 
-        if (threshold > 0)
-        {
-          if (millis() > (Obst_t0 + 2000)) threshold = 0;
-        }
+          if ((old_dist < 121) && (act_dist > 0) && (act_dist < 120) && (act_dist < old_dist))
+          {
 
-        if (threshold > 5)
-        {
-          //Serial.println("Obstacle");
-          threshold = 0;
-          Break_t0 = millis();
-          Break_flag = true;
-          SerializedData.command.Speed = 60;
-          Obst_Detect = true;
+            speed = (old_dist - act_dist) / (t1 - t2);
+            if ((speed > 0.3) && (act_dist > 80))
+            {
+              threshold += 1;
+              Obst_t0 = millis();
+            }
+            
+            if ((speed > 0.2) && (act_dist < 80) && (act_dist > 40))
+            {
+              threshold += 1;
+              Obst_t0 = millis();
+            }
+            if ((speed > 1) && (act_dist < 40))
+            {
+              threshold += 1;
+              Obst_t0 = millis();
+            }
+
+            if (threshold > 0)
+            {
+              if (millis() > (Obst_t0 + 2000))
+                threshold = 0;
+            }
+
+            if (threshold > 5)
+            {
+              //Serial.println("Obstacle");
+              threshold = 0;
+              Break_t0 = millis();
+              Break_flag = true;
+              SerializedData.command.Speed = 60;
+              Obst_Detect = true;
+            }
+          }
         }
       }
 
-
-
       if (Break_flag)
       {
-        SerializedData.command.Speed = 60;  
+        SerializedData.command.Speed = 60;
         if (millis() > Break_t0 + 50)
           SerializedData.command.Speed = 81;
         if (millis() > Break_t0 + 500)
@@ -176,10 +173,10 @@ void loop()
           Break_flag = false;
           Obst_Detect = false;
         }
-        
       }
 
-      if (SerializedData.command.Speed > 94) SerializedData.command.Speed = 94;
+      if (SerializedData.command.Speed > 94)
+        SerializedData.command.Speed = 94;
 
       Wire.beginTransmission(7);                               // I2C to Servo Controller
       Wire.write(SerializedData.command.SteeringAngle & 0xff); // sending steering angle to light controller for turn indicator
